@@ -1,0 +1,55 @@
+const playerBoard = document.getElementById("player-board");
+const enemyBoard = document.getElementById("enemy-board");
+const SIZE = 10;
+
+function createBoard(board, isEnemy = false) {
+    board.innerHTML = "";
+    for (let i = 0; i < SIZE * SIZE; i++) {
+        const cell = document.createElement("div");
+        cell.className = "cell";
+        cell.dataset.index = i;
+
+        if (!isEnemy) {
+            cell.onclick = () => cell.classList.toggle("ship");
+        }
+
+        board.appendChild(cell);
+    }
+}
+
+// wysyła statki
+document.getElementById("gotowe").onclick = function() {
+    let lista = "";
+    document.querySelectorAll("#player-board .ship").forEach(cell => {
+        lista += cell.dataset.index + ",";
+    });
+
+    if (lista === "") {
+        document.getElementById("info").innerHTML = "Nie ustawiłeś żadnych statków!";
+        return;
+    }
+
+    fetch("zapisz.php?statki=" + lista)
+        .then(response => response.text())
+        .then(odp => {
+            document.getElementById("info").innerHTML = odp;
+            this.disabled = true;  // blokujemy przycisk
+            this.textContent = "ZAPISANO!";
+        })
+        .catch(err => {
+            document.getElementById("info").innerHTML = "Błąd wysyłania!";
+            console.error(err);
+        });
+};
+
+document.getElementById("koniec-link").onclick = function(e) {
+    e.preventDefault();
+    document.body.innerHTML = "<h1 style='text-align:center; margin-top:200px; font-size:80px; color:red;'>KONIEC GRY</h1>";
+    setTimeout(() => {
+        window.location.href = "statki.php";
+    }, 2000);
+};
+
+// tworzenie plansz
+createBoard(playerBoard, false);  
+createBoard(enemyBoard, true);    
